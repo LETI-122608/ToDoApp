@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Menu;
 
 import java.io.ByteArrayInputStream;
 
+@Menu(order = 2, icon = "vaadin:qrcode", title = "QR Generator")
 @Route("qr")
 @PageTitle("QR Generator")
 public class QrView extends VerticalLayout {
