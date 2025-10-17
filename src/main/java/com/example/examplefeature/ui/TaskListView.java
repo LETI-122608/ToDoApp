@@ -17,6 +17,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import com.example.qr.QRCodeService;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.server.StreamResource;
+import java.io.ByteArrayInputStream;
+
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -81,6 +88,33 @@ public class TaskListView extends Main {
         taskGrid.addColumn(task -> Optional.ofNullable(task.getDueDate()).map(dateFormatter::format).orElse("Never"))
                 .setHeader("Due Date");
         taskGrid.addColumn(task -> dateTimeFormatter.format(task.getCreationDate())).setHeader("Creation Date");
+        taskGrid.addComponentColumn(task -> {
+            Button qrBtn = new Button("QR");
+            qrBtn.addClickListener(e -> {
+                // 1) Generate PNG bytes for this task's description
+                byte[] png = new QRCodeService().toPng(task.getDescription(), 256);
+
+                // 2) Wrap in a StreamResource (disable caching so image updates reliably)
+                String name = "task-" + (task.getId() == null ? "new" : task.getId()) + ".png";
+                StreamResource res = new StreamResource(name, () -> new ByteArrayInputStream(png));
+                res.setCacheTime(0);
+
+                // 3) Build dialog with image (+ optional download link)
+                Image img = new Image(res, "QR for: " + task.getDescription());
+                img.setWidth("256px"); img.setHeight("256px");
+
+                Anchor download = new Anchor(res, "Download PNG");
+                download.getElement().setAttribute("download", true);
+
+                Dialog d = new Dialog();
+                d.add(new H3("QR for: " + task.getDescription()), img, download);
+                d.setModal(true);
+                d.setDraggable(true);
+                d.open();
+            });
+            return qrBtn;
+        }).setHeader("QR");
+
         taskGrid.setSizeFull();
 
         setSizeFull();
