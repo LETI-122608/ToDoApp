@@ -6,9 +6,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Menu;
 
 import java.io.ByteArrayInputStream;
 
+@Route("qr")
+@PageTitle("QR Generator")
 public class QrView extends VerticalLayout {
     private final QRCodeService qr = new QRCodeService();
 
