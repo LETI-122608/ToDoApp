@@ -2,6 +2,7 @@ package com.example.examplefeature.exportpdf;
 
 import com.example.examplefeature.Task;
 import com.example.examplefeature.TaskService;
+import com.example.qr.QRCodeService;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,18 @@ public class PdfExportService {
         this.taskService = taskService;
     }
 
+    /** Backwards-compatible entry point */
     public byte[] exportTasksToPdfBytes() throws IOException {
+        return exportTasksToPdfBytes(null);
+    }
+
+    /** New: embed a bottom-right QR that points to downloadUrl (if not null) */
+    public byte[] exportTasksToPdfBytes(String downloadUrlForQr) throws IOException {
         List<Task> tasks = taskService.findAll();
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            // Page setup: A4, left-right=36pt, top=72pt (room for header), bottom=54pt (room for footer)
-            Document document = new Document(PageSize.A4, 36f, 36f, 72f, 54f);
+            // Increase bottom margin to reserve space for footer + QR
+            Document document = new Document(PageSize.A4, 36f, 36f, 72f, 96f);
             PdfWriter writer = PdfWriter.getInstance(document, out);
 
             // Fonts (embed Unicode-capable TTF; fallback to Helvetica if not found)
@@ -41,8 +48,14 @@ public class PdfExportService {
             Font cellFont   = new Font(base, 10f, Font.NORMAL, Color.BLACK);
             Font footerFont = new Font(base,  8f, Font.NORMAL, Color.GRAY);
 
-            // Footer: "Página X de Y"
-            writer.setPageEvent(new PageXofY(footerFont));
+            // Prepare QR bytes once (if we have a URL)
+            byte[] qrBytes = null;
+            if (downloadUrlForQr != null && !downloadUrlForQr.isBlank()) {
+                qrBytes = new QRCodeService().toPng(downloadUrlForQr, 192);
+            }
+
+            // Footer + optional QR on each page
+            writer.setPageEvent(new Decorations(footerFont, qrBytes));
 
             // Metadata
             document.addTitle("Lista de Tarefas");
@@ -73,7 +86,7 @@ public class PdfExportService {
             table.setWidths(new float[]{1f, 6f, 2.5f, 2.5f});
             table.setHeaderRows(1);
 
-            Color headerBg = new Color(45, 55, 72); // dark slate
+            Color headerBg = new Color(45, 55, 72);
             table.addCell(th("#",          headerFont, headerBg, Element.ALIGN_CENTER));
             table.addCell(th("Descrição",  headerFont, headerBg, Element.ALIGN_LEFT));
             table.addCell(th("Prazo",      headerFont, headerBg, Element.ALIGN_CENTER));
@@ -132,12 +145,8 @@ public class PdfExportService {
     // Accepts java.time.* or java.util.Date; otherwise falls back to toString()
     private static String formatDate(Object date) {
         if (date == null) return "-";
-        if (date instanceof LocalDate) {
-            return ((LocalDate) date).format(DATE_FMT);
-        }
-        if (date instanceof LocalDateTime) {
-            return ((LocalDateTime) date).toLocalDate().format(DATE_FMT);
-        }
+        if (date instanceof LocalDate) return ((LocalDate) date).format(DATE_FMT);
+        if (date instanceof LocalDateTime) return ((LocalDateTime) date).toLocalDate().format(DATE_FMT);
         if (date instanceof Date) {
             Instant i = ((Date) date).toInstant();
             return i.atZone(ZoneId.systemDefault()).toLocalDate().format(DATE_FMT);
@@ -160,12 +169,16 @@ public class PdfExportService {
         return BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
     }
 
-    // Footer: "Página X de Y"
-    private static class PageXofY extends PdfPageEventHelper {
-        private final Font font;
+    /** Footer ("Página X de Y") + optional QR bottom-right on each page */
+    private static class Decorations extends PdfPageEventHelper {
+        private final Font footerFont;
+        private final byte[] qrBytes;
         private PdfTemplate total;
 
-        private PageXofY(Font font) { this.font = font; }
+        private Decorations(Font footerFont, byte[] qrBytes) {
+            this.footerFont = footerFont;
+            this.qrBytes = qrBytes;
+        }
 
         @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
@@ -175,17 +188,33 @@ public class PdfExportService {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             PdfContentByte cb = writer.getDirectContent();
-            Phrase footer = new Phrase("Página " + writer.getPageNumber() + " de ", font);
+
+            // Footer text
+            Phrase footer = new Phrase("Página " + writer.getPageNumber() + " de ", footerFont);
             float x = document.right() - 36f;
-            float y = document.bottom() - 18f; // below bottom margin
+            float y = document.bottom() - 18f; // bottom margin
             ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT, footer, x, y, 0);
             cb.addTemplate(total, x, y);
+
+            // QR in bottom-right (if provided)
+            if (qrBytes != null) {
+                try {
+                    Image qr = Image.getInstance(qrBytes);
+                    float size = 64f; // points (~0.9in)
+                    qr.scaleAbsolute(size, size);
+                    float qx = document.right() - size;
+                    float qy = document.bottom() - size - 8f; // inside bottom margin
+                    if (qy < 8f) qy = 8f;
+                    qr.setAbsolutePosition(qx, qy);
+                    cb.addImage(qr);
+                } catch (Exception ignore) { /* skip QR if anything goes wrong */ }
+            }
         }
 
         @Override
         public void onCloseDocument(PdfWriter writer, Document document) {
             ColumnText.showTextAligned(total, Element.ALIGN_LEFT,
-                    new Phrase(String.valueOf(writer.getPageNumber() - 1), font), 2, 2, 0);
+                    new Phrase(String.valueOf(writer.getPageNumber() - 1), footerFont), 2, 2, 0);
         }
     }
 }
