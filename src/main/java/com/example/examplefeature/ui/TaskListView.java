@@ -1,13 +1,24 @@
 package com.example.examplefeature.ui;
 
+import com.vaadin.flow.server.VaadinService;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import com.vaadin.flow.server.VaadinServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.example.base.ui.component.ViewToolbar;
 import com.example.examplefeature.Task;
 import com.example.examplefeature.TaskService;
+import com.example.qr.QRCodeService;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -15,15 +26,14 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
 import com.vaadin.flow.theme.lumo.LumoUtility;
-
-import com.example.qr.QRCodeService;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.server.StreamResource;
-import java.io.ByteArrayInputStream;
 
+
+import org.springframework.beans.factory.annotation.Value;
+
+import java.io.ByteArrayInputStream;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -37,13 +47,17 @@ import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRe
 public class TaskListView extends Main {
 
     private final TaskService taskService;
+    private final String publicBaseUrl;
+
     private final TextField description;
     private final DatePicker dueDate;
     private final Button createBtn;
     private final Grid<Task> taskGrid;
 
-    public TaskListView(TaskService taskService) {
+    public TaskListView(TaskService taskService,
+                        @Value("${app.public-base-url:}") String publicBaseUrl) {
         this.taskService = taskService;
+        this.publicBaseUrl = publicBaseUrl == null ? "" : publicBaseUrl.trim();
 
         description = new TextField();
         description.setPlaceholder("What do you want to do?");
@@ -88,32 +102,74 @@ public class TaskListView extends Main {
         taskGrid.addColumn(task -> Optional.ofNullable(task.getDueDate()).map(dateFormatter::format).orElse("Never"))
                 .setHeader("Due Date");
         taskGrid.addColumn(task -> dateTimeFormatter.format(task.getCreationDate())).setHeader("Creation Date");
+
+        // ---- QR column: points to /task/{id}.txt and offers "Search the web"
         taskGrid.addComponentColumn(task -> {
             Button qrBtn = new Button("QR");
             qrBtn.addClickListener(e -> {
-                // 1) Generate PNG bytes for this task's description
-                byte[] png = new QRCodeService().toPng(task.getDescription(), 256);
-
-                // 2) Wrap in a StreamResource (disable caching so image updates reliably)
-                String name = "task-" + (task.getId() == null ? "new" : task.getId()) + ".png";
-                StreamResource res = new StreamResource(name, () -> new ByteArrayInputStream(png));
-                res.setCacheTime(0);
-
-                // 3) Build dialog with image (+ optional download link)
-                Image img = new Image(res, "QR for: " + task.getDescription());
-                img.setWidth("256px"); img.setHeight("256px");
-
-                Anchor download = new Anchor(res, "Download PNG");
-                download.getElement().setAttribute("download", true);
-
                 Dialog d = new Dialog();
-                d.add(new H3("QR for: " + task.getDescription()), img, download);
                 d.setModal(true);
                 d.setDraggable(true);
+
+                if (task.getId() != null) {
+                    String base = resolveBaseUrl();
+                    String txtUrl = base + "/task/" + task.getId() + ".txt";
+
+                    // QR encodes the TXT download URL
+                    byte[] png = new QRCodeService().toPng(txtUrl, 256);
+                    StreamResource res = new StreamResource(
+                            "task-" + task.getId() + ".png",
+                            () -> new ByteArrayInputStream(png)
+                    );
+
+
+                    res.setCacheTime(0);
+
+                    Image img = new Image(res, "QR → downloadable TXT");
+                    img.setWidth("256px");
+                    img.setHeight("256px");
+
+                    // Quick actions under the QR
+                    Anchor openTxt = new Anchor(txtUrl, "Open task .txt");
+                    openTxt.setTarget("_blank");
+                    openTxt.getElement().setAttribute("download", true);
+
+                    String google = "https://www.google.com/search?q=" +
+                            URLEncoder.encode(task.getDescription(), StandardCharsets.UTF_8);
+                    Anchor search = new Anchor(google, "Search the web");
+                    search.setTarget("_blank");
+
+                    d.add(new H3("QR for task " + task.getId()), img, openTxt, search);
+                } else {
+                    // Fallback for unsaved tasks: embed human-readable text in the QR
+                    String dueText = Optional.ofNullable(task.getDueDate())
+                            .map(dateFormatter::format).orElse("Never");
+                    String createdText = dateTimeFormatter.format(task.getCreationDate());
+
+                    String payload =
+                            "Task\n" +
+                                    "Desc: " + task.getDescription() + "\n" +
+                                    "Due: " + dueText + "\n" +
+                                    "Created: " + createdText + "\n" +
+                                    "ID: (new)";
+
+                    byte[] png = new QRCodeService().toPng(payload, 256);
+                    StreamResource res = new StreamResource("task-new.png",
+                            () -> new ByteArrayInputStream(png));
+                    res.setCacheTime(0);
+
+                    Image img = new Image(res, "QR for unsaved task");
+                    img.setWidth("256px");
+                    img.setHeight("256px");
+
+                    d.add(new H3("QR (unsaved task)"), img);
+                }
+
                 d.open();
             });
             return qrBtn;
         }).setHeader("QR");
+        // ---- end QR column
 
         taskGrid.setSizeFull();
 
@@ -134,4 +190,34 @@ public class TaskListView extends Main {
         Notification.show("Task added", 3000, Notification.Position.BOTTOM_END)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
+
+    /** Prefer app.public-base-url; else derive from current request */
+    private String resolveBaseUrl() {
+        if (!publicBaseUrl.isBlank()) return publicBaseUrl.replaceAll("/+$", "");
+
+        var req = VaadinService.getCurrentRequest();
+        if (!(req instanceof VaadinServletRequest vsr)) return "";
+
+        HttpServletRequest http = vsr.getHttpServletRequest();
+
+        // honor reverse-proxy headers if present
+        String scheme = headerOr(http, "X-Forwarded-Proto", http.getScheme());
+        String host   = headerOr(http, "X-Forwarded-Host",  http.getServerName());
+        String portS  = headerOr(http, "X-Forwarded-Port",  String.valueOf(http.getServerPort()));
+        String ctx    = http.getContextPath();
+
+        if (host.contains(":")) { // forwarded host may already include port
+            return scheme + "://" + host + ctx;
+        }
+        int port = Integer.parseInt(portS);
+        boolean def = ("http".equalsIgnoreCase(scheme) && port == 80)
+                || ("https".equalsIgnoreCase(scheme) && port == 443);
+        return scheme + "://" + host + (def ? "" : ":" + port) + ctx;
+    }
+
+    private static String headerOr(HttpServletRequest r, String name, String fallback) {
+        String v = r.getHeader(name);
+        return (v == null || v.isBlank()) ? fallback : v;
+    }
+
 }

@@ -2,44 +2,113 @@ package com.example.examplefeature.exportpdf;
 
 import com.example.examplefeature.Task;
 import com.example.examplefeature.TaskService;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
+import com.example.qr.QRCodeService;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
 import org.springframework.stereotype.Service;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class PdfExportService {
 
     private final TaskService taskService;
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public PdfExportService(TaskService taskService) {
         this.taskService = taskService;
     }
 
+    /** Backwards-compatible entry point */
     public byte[] exportTasksToPdfBytes() throws IOException {
+        return exportTasksToPdfBytes(null);
+    }
+
+    /** New: embed a bottom-right QR that points to downloadUrl (if not null) */
+    public byte[] exportTasksToPdfBytes(String downloadUrlForQr) throws IOException {
         List<Task> tasks = taskService.findAll();
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Document document = new Document();
-            PdfWriter.getInstance(document, out);
-            document.open();
+            // Increase bottom margin to reserve space for footer + QR
+            Document document = new Document(PageSize.A4, 36f, 36f, 72f, 96f);
+            PdfWriter writer = PdfWriter.getInstance(document, out);
 
-            document.add(new Paragraph("TO-DO List"));
-            document.add(new Paragraph(" "));
+            // Fonts (embed Unicode-capable TTF; fallback to Helvetica if not found)
+            BaseFont base = loadUnicodeBaseFont();
+            Font titleFont  = new Font(base, 16f, Font.BOLD);
+            Font metaFont   = new Font(base,  9f, Font.NORMAL, Color.GRAY);
+            Font headerFont = new Font(base, 10f, Font.BOLD, Color.WHITE);
+            Font cellFont   = new Font(base, 10f, Font.NORMAL, Color.BLACK);
+            Font footerFont = new Font(base,  8f, Font.NORMAL, Color.GRAY);
 
-            for (Task task : tasks) {
-                document.add(new Paragraph(
-                        "- " + safe(task.getDescription())
-                                + (task.getDueDate() != null ? " | Prazo: " + task.getDueDate() : "")
-                                + " | Criada: " + task.getCreationDate()
-                ));
+            // Prepare QR bytes once (if we have a URL)
+            byte[] qrBytes = null;
+            if (downloadUrlForQr != null && !downloadUrlForQr.isBlank()) {
+                qrBytes = new QRCodeService().toPng(downloadUrlForQr, 192);
             }
 
+            // Footer + optional QR on each page
+            writer.setPageEvent(new Decorations(footerFont, qrBytes));
+
+            // Metadata
+            document.addTitle("Lista de Tarefas");
+            document.addAuthor("ExampleFeature");
+            document.addCreator("ExampleFeature");
+            document.addSubject("Exportação de tarefas");
+            document.addCreationDate();
+
+            document.open();
+
+            // Title
+            Paragraph title = new Paragraph("Lista de Tarefas", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(4f);
+            document.add(title);
+
+            // Meta line
+            Paragraph meta = new Paragraph(
+                    "Gerado em " + formatNow() + " • Total: " + tasks.size(),
+                    metaFont);
+            meta.setAlignment(Element.ALIGN_CENTER);
+            meta.setSpacingAfter(12f);
+            document.add(meta);
+
+            // Table
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100f);
+            table.setWidths(new float[]{1f, 6f, 2.5f, 2.5f});
+            table.setHeaderRows(1);
+
+            Color headerBg = new Color(45, 55, 72);
+            table.addCell(th("#",          headerFont, headerBg, Element.ALIGN_CENTER));
+            table.addCell(th("Descrição",  headerFont, headerBg, Element.ALIGN_LEFT));
+            table.addCell(th("Prazo",      headerFont, headerBg, Element.ALIGN_CENTER));
+            table.addCell(th("Criada",     headerFont, headerBg, Element.ALIGN_CENTER));
+
+            if (tasks.isEmpty()) {
+                PdfPCell empty = td("Nenhuma tarefa.", cellFont, Element.ALIGN_CENTER, Color.WHITE);
+                empty.setColspan(4);
+                table.addCell(empty);
+            } else {
+                for (int i = 0; i < tasks.size(); i++) {
+                    Task t = tasks.get(i);
+                    Color rowBg = (i % 2 == 0) ? new Color(250, 250, 250) : Color.WHITE;
+
+                    table.addCell(td(String.valueOf(i + 1), cellFont, Element.ALIGN_CENTER, rowBg));
+                    table.addCell(td(safe(t.getDescription()), cellFont, Element.ALIGN_LEFT, rowBg));
+                    table.addCell(td(formatDate(t.getDueDate()), cellFont, Element.ALIGN_CENTER, rowBg));
+                    table.addCell(td(formatDate(t.getCreationDate()), cellFont, Element.ALIGN_CENTER, rowBg));
+                }
+            }
+
+            document.add(table);
             document.close();
             return out.toByteArray();
         } catch (DocumentException e) {
@@ -47,8 +116,105 @@ public class PdfExportService {
         }
     }
 
-    private String safe(String s) {
+    // ----- helpers -----
+
+    private static PdfPCell th(String text, Font font, Color bg, int align) {
+        PdfPCell c = new PdfPCell(new Phrase(text, font));
+        c.setBackgroundColor(bg);
+        c.setPadding(6f);
+        c.setHorizontalAlignment(align);
+        c.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        c.setBorderWidth(0.5f);
+        return c;
+    }
+
+    private static PdfPCell td(String text, Font font, int align, Color bg) {
+        PdfPCell c = new PdfPCell(new Phrase(text == null ? "" : text, font));
+        c.setPadding(5f);
+        c.setHorizontalAlignment(align);
+        c.setVerticalAlignment(Element.ALIGN_TOP);
+        c.setBackgroundColor(bg);
+        c.setBorderWidth(0.5f);
+        return c;
+    }
+
+    private static String formatNow() {
+        return LocalDate.now().format(DATE_FMT);
+    }
+
+    // Accepts java.time.* or java.util.Date; otherwise falls back to toString()
+    private static String formatDate(Object date) {
+        if (date == null) return "-";
+        if (date instanceof LocalDate) return ((LocalDate) date).format(DATE_FMT);
+        if (date instanceof LocalDateTime) return ((LocalDateTime) date).toLocalDate().format(DATE_FMT);
+        if (date instanceof Date) {
+            Instant i = ((Date) date).toInstant();
+            return i.atZone(ZoneId.systemDefault()).toLocalDate().format(DATE_FMT);
+        }
+        return String.valueOf(date);
+    }
+
+    private static String safe(String s) {
         return s == null ? "" : s;
     }
-}
 
+    // Load Unicode TTF from classpath; fallback to Helvetica if missing
+    private static BaseFont loadUnicodeBaseFont() throws IOException, DocumentException {
+        try (InputStream is = PdfExportService.class.getResourceAsStream("/fonts/DejaVuSans.ttf")) {
+            if (is != null) {
+                byte[] ttf = is.readAllBytes();
+                return BaseFont.createFont("DejaVuSans.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, ttf, null);
+            }
+        }
+        return BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+    }
+
+    /** Footer ("Página X de Y") + optional QR bottom-right on each page */
+    private static class Decorations extends PdfPageEventHelper {
+        private final Font footerFont;
+        private final byte[] qrBytes;
+        private PdfTemplate total;
+
+        private Decorations(Font footerFont, byte[] qrBytes) {
+            this.footerFont = footerFont;
+            this.qrBytes = qrBytes;
+        }
+
+        @Override
+        public void onOpenDocument(PdfWriter writer, Document document) {
+            total = writer.getDirectContent().createTemplate(30, 12);
+        }
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContent();
+
+            // Footer text
+            Phrase footer = new Phrase("Página " + writer.getPageNumber() + " de ", footerFont);
+            float x = document.right() - 36f;
+            float y = document.bottom() - 18f; // bottom margin
+            ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT, footer, x, y, 0);
+            cb.addTemplate(total, x, y);
+
+            // QR in bottom-right (if provided)
+            if (qrBytes != null) {
+                try {
+                    Image qr = Image.getInstance(qrBytes);
+                    float size = 64f; // points (~0.9in)
+                    qr.scaleAbsolute(size, size);
+                    float qx = document.right() - size;
+                    float qy = document.bottom() - size - 8f; // inside bottom margin
+                    if (qy < 8f) qy = 8f;
+                    qr.setAbsolutePosition(qx, qy);
+                    cb.addImage(qr);
+                } catch (Exception ignore) { /* skip QR if anything goes wrong */ }
+            }
+        }
+
+        @Override
+        public void onCloseDocument(PdfWriter writer, Document document) {
+            ColumnText.showTextAligned(total, Element.ALIGN_LEFT,
+                    new Phrase(String.valueOf(writer.getPageNumber() - 1), footerFont), 2, 2, 0);
+        }
+    }
+}
