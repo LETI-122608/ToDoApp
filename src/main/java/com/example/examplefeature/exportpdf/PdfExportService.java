@@ -28,8 +28,7 @@ public class PdfExportService {
 
     /** Backwards-compatible entry point */
     public byte[] exportTasksToPdfBytes() throws IOException {
-        int x =0;
-        ;
+        //To DO
         return exportTasksToPdfBytes(null);
     }
 
