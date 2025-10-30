@@ -22,6 +22,7 @@ public class DownloadPdfView {
 
     @GetMapping(value = "/download-pdf", produces = "application/pdf")
     public void downloadPdf(
+        int x = 0;
             @RequestParam(name = "disposition", defaultValue = "attachment") String disposition,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
