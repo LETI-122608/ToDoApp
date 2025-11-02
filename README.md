@@ -2,7 +2,17 @@
 
 https://youtu.be/vot5Lsj8kgE
 
-Testar o git workflow CI  jar files testing 
+Testar o git workflow:
+build.yaml:
+1)Corre numa VM Linux (ubunt-latest)
+
+2)uses: actions/checkout@v4 : Clona o repositório da commit que disparou o workflow para o workspace do runner ($GITHUB_WORKSPACE). Sem isto, não há ficheiros para compilar.
+3)uses: actions/setup-java@v4 with java-version: '21' path: 'temurin' Instala e configura o JDK 21 no runner
+
+4)run: mvn clean package ---Executa as fases do Maven até package
+5)run: cp target/*.jar . Copia o(s) JAR(s) para a raiz do workspace apenas dentro do runner
+
+6)uses: actions/upload-artifact@v4 com path: target/*.jar  Publica o(s) JAR(s) gerado(s) como artefacto de build visível para download na página da execução em Actions. 
 
 LETI-122608 – Classe ExportPDF
 Classe PdfExportService
