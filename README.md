@@ -18,8 +18,7 @@ build.yaml:
 
 6)uses: actions/upload-artifact@v4 com path: target/*.jar  Publica o(s) JAR(s) gerado(s) como artefacto de build visível para download na página da execução em Actions. 
 
-LETI-122608 – Classe ExportPDF
-Classe PdfExportService
+
 
 Classe PdfExportService
 
