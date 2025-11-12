@@ -4,6 +4,7 @@ https://youtu.be/vot5Lsj8kgE
 
 Testar o git workflow:
 build.yaml:
+
 1)Corre numa VM Linux (ubunt-latest)
 
 2)uses: actions/checkout@v4 : Clona o repositório da commit que disparou o workflow para o workspace do runner ($GITHUB_WORKSPACE). Sem isto, não há ficheiros para compilar.
