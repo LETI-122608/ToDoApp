@@ -1,0 +1,65 @@
+Method Name;CCM;CND;CDISP;CINT;FDP;HD;HEF;HER;HL;HVC;HVL;LOC;LAA;LND;MMI;MND;CC;NOAV;NOL;NOPM
+com.example.Application.main(String[]);0;0;1.0;1;0;2.5;38.7744;0.0038;6;6;15.5098;3;0.0;0;81.3571;0;1;1;0;1
+com.example.base.ui.MainErrorHandler.errorHandlerInitializer();0;0;0.7692;13;4;11.5909;1783.0916;0.049;32;28;153.8354;15;0.2;0;59.0475;2;1;8;0;0
+com.example.base.ui.MainLayout.MainLayout();0;0;0.25;2;1;2.5;38.7744;0.0038;6;6;15.5098;4;0.0;0;78.6317;0;1;1;0;0
+com.example.base.ui.MainLayout.createHeader();0;0;1.0;2;9;3.6923;423.4857;0.0188;27;19;114.694;10;0.0;0;63.7836;0;1;12;0;0
+com.example.base.ui.MainLayout.createSideNav();0;0;0.8;4;1;7.5;376.4211;0.0174;14;12;50.1895;6;0.0;0;71.1292;0;1;3;0;0
+com.example.base.ui.MainLayout.createSideNavItem(MenuEntry);2;1;0.3333;3;1;15.75;1198.6931;0.0376;22;11;76.1075;7;0.0;0;68.3023;1;2;1;0;1
+com.example.base.ui.component.ViewToolbar.ViewToolbar(String, Component[]);1;1;1.0;3;12;6.0952;1539.7486;0.0444;52;29;252.615;17;0.0;0;56.2512;1;2;20;0;2
+com.example.base.ui.component.ViewToolbar.group(Component[]);0;0;1.0;1;6;3.375;192.7473;0.0111;15;14;57.1103;6;0.0;0;70.7308;0;1;8;0;1
+com.example.currencyconversion.Conversion.convert(String, String, BigDecimal);4;1;0.4;3;3;12.8947;3837.7219;0.0817;59;33;297.6193;17;0.0;0;55.6283;0;5;13;0;3
+com.example.currencyconversion.Conversion.fetchEraV6Keyed(String, String);2;1;0.6667;12;2;15.5294;4350.1969;0.0888;53;39;280.1263;13;0.3333;0;58.4177;2;3;13;0;2
+com.example.currencyconversion.Conversion.fetchOpenV6(String);2;1;0.6667;12;2;15.8125;4315.1084;0.0883;52;38;272.8922;13;0.3333;0;58.5058;2;3;12;0;1
+com.example.currencyconversion.Conversion.getRates(String);4;1;0.4615;11;1;28.875;6592.8875;0.1172;47;29;228.3251;13;0.5;0;58.9737;0;5;6;0;1
+com.example.currencyconversion.Conversion.scale(BigDecimal, int);0;0;1.0;1;1;2.5;60.0;0.0051;8;8;24.0;4;0.0;0;77.2024;0;1;3;0;2
+com.example.currencyconversion.Conversion.CacheEntry.CacheEntry(RateBundle);0;0;1.0;1;0;1.0;13.9316;0.0019;6;5;13.9316;1;1.0;0;92.2002;0;1;3;0;1
+com.example.currencyconversion.Conversion.CacheEntry.fresh();0;0;0.3333;3;1;2.5;49.1287;0.0045;7;7;19.6515;1;0.5;0;91.0462;0;1;2;0;0
+com.example.currencyconversion.Conversion.ConversionResult.ConversionResult(String, String, BigDecimal, BigDecimal, BigDecimal, String, String);0;0;0.0;0;0;1.0;88.0;0.0066;22;16;88.0;6;1.0;0;69.4101;0;1;14;0;7
+com.example.currencyconversion.Conversion.EraV6.rates();0;0;0.0;0;0;0.5;1.0;0.0003;2;2;2.0;1;1.0;0;97.8922;0;1;1;0;0
+com.example.currencyconversion.Conversion.RateBundle.RateBundle(String, Map<String, BigDecimal>, String, String);0;0;0.0;0;0;0.5;19.0196;0.0024;12;9;38.0391;3;1.0;0;78.5304;0;1;8;0;4
+com.example.currencyconversion.CurrencyConversionView.CurrencyConversionView();0;0;0.7391;22;2;25.5556;23965.4966;0.2771;153;70;937.7803;55;0.7857;0;41.2276;1;1;20;0;0
+com.example.currencyconversion.CurrencyConversionView.convert();6;1;0.7;9;3;24.9118;18517.9468;0.2333;128;56;743.3414;42;0.5333;0;44.2261;2;7;23;0;0
+com.example.currencyconversion.CurrencyConversionView.stripTrailingZeros(BigDecimal);1;0;0.25;4;1;14.0;744.1119;0.0274;16;10;53.1508;4;0.0;0;74.7001;0;2;1;0;1
+com.example.examplefeature.Task.Task();0;0;0.0;0;0;0.0;0.0;0.0;1;1;0.0;2;0.0;0;∞;0;1;0;0;0
+com.example.examplefeature.Task.Task(String, Instant);0;0;0.0;0;0;1.5;23.2647;0.0027;6;6;15.5098;4;1.0;0;78.6317;0;1;3;0;2
+com.example.examplefeature.Task.equals(Object);4;1;0.75;3;0;12.6;1605.7166;0.0457;30;19;127.4378;11;1.0;0;62.3358;1;5;2;0;1
+com.example.examplefeature.Task.getCreationDate();0;0;0.0;0;0;1.0;4.7549;0.0009;3;3;4.7549;3;1.0;0;85.3765;0;1;1;0;0
+com.example.examplefeature.Task.getDescription();0;0;0.0;0;0;1.0;4.7549;0.0009;3;3;4.7549;3;1.0;0;85.3765;0;1;1;0;0
+com.example.examplefeature.Task.getDueDate();0;0;0.0;0;0;1.0;4.7549;0.0009;3;3;4.7549;3;1.0;0;85.3765;0;1;1;0;0
+com.example.examplefeature.Task.getId();0;0;0.0;0;0;1.0;4.7549;0.0009;3;3;4.7549;3;1.0;0;85.3765;0;1;1;0;0
+com.example.examplefeature.Task.hashCode();0;0;0.5;2;0;0.0;0.0;0.0;5;5;11.6096;8;0.0;0;73.0082;0;1;0;0;0
+com.example.examplefeature.Task.setDescription(String);1;1;1.0;1;0;6.75;374.6695;0.0173;15;13;55.5066;6;1.0;0;70.7462;1;2;3;0;1
+com.example.examplefeature.Task.setDueDate(LocalDate);0;0;0.0;0;0;1.5;17.4145;0.0022;5;5;11.6096;3;1.0;0;82.3002;0;1;2;0;1
+com.example.examplefeature.TaskRepository.findAllBy(Pageable);0;0;0.0;0;0;0.0;NaN;NaN;0;0;NaN;0;0.0;0;0.0;N/A;1;N/A;0;1
+com.example.examplefeature.TaskService.TaskService(TaskRepository);0;0;0.0;0;0;0.5;2.3774;0.0006;3;3;4.7549;3;1.0;0;85.3765;0;1;2;0;1
+com.example.examplefeature.TaskService.createTask(String, LocalDate);1;1;1.0;4;1;6.6667;506.6667;0.0212;19;16;76.0;9;0.5;0;65.9215;1;2;4;0;2
+com.example.examplefeature.TaskService.findAll();0;0;1.0;1;0;1.5;17.4145;0.0022;5;5;11.6096;4;1.0;0;79.5748;0;1;1;0;0
+com.example.examplefeature.TaskService.findOne(Long);0;0;1.0;1;0;1.5;23.2647;0.0027;6;6;15.5098;4;1.0;0;78.6317;0;1;2;0;1
+com.example.examplefeature.TaskService.list(Pageable);0;0;1.0;2;0;2.0;39.303;0.0039;7;7;19.6515;4;1.0;0;77.9128;0;1;2;0;1
+com.example.examplefeature.exportpdf.DownloadPdfView.DownloadPdfView(PdfExportService);0;0;0.0;0;0;1.0;8.0;0.0013;4;4;8.0;3;1.0;0;83.2686;0;1;2;0;1
+com.example.examplefeature.exportpdf.DownloadPdfView.downloadPdf(String, HttpServletRequest, HttpServletResponse);1;0;0.6;9;2;11.3846;3560.5887;0.0777;58;42;312.7544;21;0.3333;0;53.5998;1;2;11;0;3
+com.example.examplefeature.exportpdf.DownloadPdfView.headerOr(HttpServletRequest, String, String);2;0;1.0;2;0;4.9;245.9284;0.0131;14;12;50.1895;4;0.0;0;74.8227;0;3;4;0;3
+com.example.examplefeature.exportpdf.DownloadPdfView.resolveBaseUrl(HttpServletRequest);7;1;0.3333;11;0;21.4762;8390.5557;0.1376;72;43;390.6911;15;1.0;0;55.9224;0;8;9;0;1
+com.example.examplefeature.exportpdf.ExportPdfPreviewView.ExportPdfPreviewView();1;0;0.75;16;2;14.0909;4482.9766;0.0906;59;42;318.1467;25;0.0;0;51.8901;1;2;7;0;0
+com.example.examplefeature.exportpdf.PdfExportService.PdfExportService(TaskService);0;0;0.0;0;0;1.0;8.0;0.0013;4;4;8.0;3;1.0;0;83.2686;0;1;2;0;1
+com.example.examplefeature.exportpdf.PdfExportService.exportTasksToPdfBytes();0;0;0.0;0;0;2.5;38.7744;0.0038;6;6;15.5098;4;0.0;0;78.6317;0;1;0;0;0
+com.example.examplefeature.exportpdf.PdfExportService.exportTasksToPdfBytes(String);7;1;0.3429;29;9;64.75;108674.7434;0.7591;243;120;1678.3744;71;0.0588;1;36.775;3;7;30;1;1
+com.example.examplefeature.exportpdf.PdfExportService.formatDate(Object);4;1;1.0;7;1;18.2;2883.9201;0.0675;38;18;158.4572;11;0.5;0;61.6716;1;5;3;0;1
+com.example.examplefeature.exportpdf.PdfExportService.formatNow();0;0;0.5;2;0;2.5;38.7744;0.0038;6;6;15.5098;3;1.0;0;81.3571;0;1;1;0;0
+com.example.examplefeature.exportpdf.PdfExportService.loadUnicodeBaseFont();1;1;0.75;4;1;7.6818;950.9629;0.0322;27;24;123.794;10;0.0;0;63.4593;2;2;7;0;0
+com.example.examplefeature.exportpdf.PdfExportService.safe(String);1;0;0.0;0;0;2.6667;59.8902;0.0051;8;7;22.4588;3;0.0;0;80.0992;0;2;1;0;1
+com.example.examplefeature.exportpdf.PdfExportService.td(String, Font, int, Color);1;0;0.4;5;2;8.8;1082.267;0.0351;28;21;122.9849;9;0.0;0;64.4822;0;2;6;0;4
+com.example.examplefeature.exportpdf.PdfExportService.th(String, Font, Color, int);0;0;0.4;5;2;8.125;813.1354;0.029;24;18;100.0782;9;0.0;0;65.1802;0;1;6;0;4
+com.example.examplefeature.exportpdf.PdfExportService.Decorations.Decorations(Font, byte[]);0;0;0.0;0;0;1.5;33.6883;0.0035;8;7;22.4588;4;1.0;0;77.467;0;1;4;0;2
+com.example.examplefeature.exportpdf.PdfExportService.Decorations.onCloseDocument(PdfWriter, Document);0;0;1.0;3;1;4.0;228.4413;0.0125;15;14;57.1103;5;0.6667;0;72.458;0;1;4;0;2
+com.example.examplefeature.exportpdf.PdfExportService.Decorations.onEndPage(PdfWriter, Document);3;2;0.5;10;1;18.1818;6764.9073;0.1192;69;42;372.0699;23;0.75;0;52.1099;2;4;14;0;2
+com.example.examplefeature.exportpdf.PdfExportService.Decorations.onOpenDocument(PdfWriter, Document);0;0;1.0;2;0;2.0;48.0;0.0044;8;8;24.0;4;1.0;0;77.2024;0;1;2;0;2
+com.example.examplefeature.exporttxt.TaskTextController.TaskTextController(TaskService);0;0;0.0;0;0;1.0;8.0;0.0013;4;4;8.0;3;1.0;0;83.2686;0;1;2;0;1
+com.example.examplefeature.exporttxt.TaskTextController.taskTxt(Long, HttpServletResponse);2;0;0.6429;14;4;15.75;6700.5524;0.1185;75;51;425.4319;17;0.3333;0;54.6073;0;3;10;0;2
+com.example.examplefeature.ui.TaskListView.TaskListView(TaskService, String);3;1;0.5882;49;9;56.5495;123530.7898;0.8268;301;153;2184.4737;103;0.3158;0;32.5628;3;3;40;0;2
+com.example.examplefeature.ui.TaskListView.createTask();0;0;1.0;8;2;6.25;547.3027;0.0223;21;18;87.5684;8;0.6667;0;66.7195;0;1;6;0;0
+com.example.examplefeature.ui.TaskListView.headerOr(HttpServletRequest, String, String);2;0;1.0;2;0;4.9;245.9284;0.0131;14;12;50.1895;4;0.0;0;74.8227;0;3;4;0;3
+com.example.examplefeature.ui.TaskListView.resolveBaseUrl();7;1;0.4615;12;0;23.8095;9995.0169;0.1547;76;46;419.7907;19;1.0;0;53.4648;1;8;10;0;0
+com.example.qr.QRCodeService.asStream(String, int);0;0;0.0;0;0;2.5;49.1287;0.0045;7;7;19.6515;3;0.0;0;80.6382;0;1;2;0;2
+com.example.qr.QRCodeService.toPng(String, int);3;0;0.8889;9;5;13.1818;3909.4301;0.0827;55;42;296.5775;18;0.0;0;55.1271;1;4;15;0;2
+com.example.qr.QrView.QrView();0;0;0.6667;18;0;20.625;8999.9538;0.1442;79;46;436.3614;20;1.0;0;53.1377;1;1;9;0;0
