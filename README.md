@@ -82,10 +82,3 @@ Aumentar a coesão (reduzir LCOM).
 
 Reorganizar responsabilidades por classe.
 
-💡 Sugestões de melhoria:
-
-Aplicar o princípio Single Responsibility.
-
-Dividir PdfExportService em classes menores (ex.: PdfGenerator, FileSaver).
-
-Adicionar documentação e comentários para aumentar o Maintainability Index.
